@@ -1,0 +1,115 @@
+2025-06-09 12:00:04,022 - INFO - Starting Amazon scraper
+2025-06-09 12:00:04,023 - INFO - Fetching free proxies...
+2025-06-09 12:00:06,012 - INFO - Found 600 potential proxies
+2025-06-09 12:13:18,210 - INFO - Starting Amazon scraper
+2025-06-09 12:13:18,211 - INFO - Fetching free proxies...
+2025-06-09 12:13:21,698 - INFO - Found 600 potential proxies
+2025-06-09 12:17:59,594 - INFO - Validated 6 working proxies
+2025-06-09 12:18:01,161 - INFO - Successfully parsed robots.txt
+2025-06-09 12:20:17,940 - INFO - Searching for products: Pre-loved jewelry
+2025-06-09 12:20:21,554 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry (Attempt 1/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:20:22,848 - WARNING - HTTP Error: 202
+2025-06-09 12:20:36,688 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry (Attempt 2/3, Proxy: http://139.59.1.14:80)
+2025-06-09 12:20:52,141 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:21:00,064 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry (Attempt 3/3, Proxy: None)
+2025-06-09 12:21:01,268 - WARNING - Request blocked or CAPTCHA encountered
+2025-06-09 12:21:01,268 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=Pre-loved+jewelry
+2025-06-09 12:21:01,268 - ERROR - Failed to retrieve search page 1: Failed after 3 attempts
+2025-06-09 12:21:06,743 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=2 (Attempt 1/3, Proxy: None)
+2025-06-09 12:21:09,090 - INFO - Found 20 products on page 2
+2025-06-09 12:21:13,353 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=3 (Attempt 1/3, Proxy: None)
+2025-06-09 12:21:15,198 - INFO - Found 48 products on page 3
+2025-06-09 12:21:20,593 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=4 (Attempt 1/3, Proxy: http://139.59.1.14:80)
+2025-06-09 12:21:36,062 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:21:45,154 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=4 (Attempt 2/3, Proxy: http://134.209.29.120:80)
+2025-06-09 12:22:00,460 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:22:10,525 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=4 (Attempt 3/3, Proxy: None)
+2025-06-09 12:22:12,354 - INFO - Found 20 products on page 4
+2025-06-09 12:22:18,443 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=5 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:22:33,733 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:22:44,647 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=5 (Attempt 2/3, Proxy: None)
+2025-06-09 12:22:46,504 - INFO - Found 20 products on page 5
+2025-06-09 12:22:51,975 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=6 (Attempt 1/3, Proxy: None)
+2025-06-09 12:22:53,875 - INFO - Found 20 products on page 6
+2025-06-09 12:22:59,691 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=7 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:23:14,981 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:23:24,109 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=7 (Attempt 2/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:23:39,625 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:23:50,756 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=7 (Attempt 3/3, Proxy: http://8.219.97.248:80)
+2025-06-09 12:23:51,756 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Max retries exceeded with url: /s?k=Pre-loved+jewelry&page=7 (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 502 Bad Gateway')))
+2025-06-09 12:24:00,253 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=Pre-loved+jewelry&page=7
+2025-06-09 12:24:00,253 - ERROR - Failed to retrieve search page 7: Failed after 3 attempts
+2025-06-09 12:24:06,433 - INFO - Request to https://www.amazon.com/s?k=Pre-loved+jewelry&page=8 (Attempt 1/3, Proxy: None)
+2025-06-09 12:24:07,689 - WARNING - No product cards found on page 8
+2025-06-09 12:24:07,690 - INFO - Found 0 product URLs
+2025-06-09 12:25:08,702 - INFO - Starting Amazon scraper
+2025-06-09 12:25:08,702 - INFO - Fetching free proxies...
+2025-06-09 12:25:12,317 - INFO - Found 600 potential proxies
+2025-06-09 12:29:52,033 - INFO - Validated 7 working proxies
+2025-06-09 12:29:54,118 - INFO - Successfully parsed robots.txt
+2025-06-09 12:30:48,732 - INFO - Searching for products: airpods
+2025-06-09 12:30:52,269 - INFO - Request to https://www.amazon.com/s?k=airpods (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:31:07,573 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:31:19,557 - INFO - Request to https://www.amazon.com/s?k=airpods (Attempt 2/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:31:34,857 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:31:44,742 - INFO - Request to https://www.amazon.com/s?k=airpods (Attempt 3/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:32:00,037 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:32:12,068 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods
+2025-06-09 12:32:12,068 - ERROR - Failed to retrieve search page 1: Failed after 3 attempts
+2025-06-09 12:32:15,098 - INFO - Request to https://www.amazon.com/s?k=airpods&page=2 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:32:30,392 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:32:39,432 - INFO - Request to https://www.amazon.com/s?k=airpods&page=2 (Attempt 2/3, Proxy: http://139.59.1.14:80)
+2025-06-09 12:32:54,885 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:33:07,923 - INFO - Request to https://www.amazon.com/s?k=airpods&page=2 (Attempt 3/3, Proxy: http://139.59.1.14:80)
+2025-06-09 12:33:23,392 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:33:32,386 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods&page=2
+2025-06-09 12:33:32,386 - ERROR - Failed to retrieve search page 2: Failed after 3 attempts
+2025-06-09 12:33:36,349 - INFO - Request to https://www.amazon.com/s?k=airpods&page=3 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:33:51,644 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:34:01,831 - INFO - Request to https://www.amazon.com/s?k=airpods&page=3 (Attempt 2/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:34:03,124 - WARNING - HTTP Error: 202
+2025-06-09 12:34:11,673 - INFO - Request to https://www.amazon.com/s?k=airpods&page=3 (Attempt 3/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:34:11,934 - WARNING - HTTP Error: 202
+2025-06-09 12:34:22,442 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods&page=3
+2025-06-09 12:34:22,442 - ERROR - Failed to retrieve search page 3: Failed after 3 attempts
+2025-06-09 12:34:28,348 - INFO - Request to https://www.amazon.com/s?k=airpods&page=4 (Attempt 1/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:34:28,609 - WARNING - HTTP Error: 202
+2025-06-09 12:34:39,408 - INFO - Request to https://www.amazon.com/s?k=airpods&page=4 (Attempt 2/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:34:54,703 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:35:04,490 - INFO - Request to https://www.amazon.com/s?k=airpods&page=4 (Attempt 3/3, Proxy: http://134.209.29.120:80)
+2025-06-09 12:35:19,794 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:35:29,574 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods&page=4
+2025-06-09 12:35:29,574 - ERROR - Failed to retrieve search page 4: Failed after 3 attempts
+2025-06-09 12:35:35,681 - INFO - Request to https://www.amazon.com/s?k=airpods&page=5 (Attempt 1/3, Proxy: http://8.219.97.248:80)
+2025-06-09 12:35:36,682 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Max retries exceeded with url: /s?k=airpods&page=5 (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 502 Bad Gateway')))
+2025-06-09 12:35:48,795 - INFO - Request to https://www.amazon.com/s?k=airpods&page=5 (Attempt 2/3, Proxy: http://8.219.97.248:80)
+2025-06-09 12:36:04,373 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Max retries exceeded with url: /s?k=airpods&page=5 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1017)')))
+2025-06-09 12:36:15,241 - INFO - Request to https://www.amazon.com/s?k=airpods&page=5 (Attempt 3/3, Proxy: None)
+2025-06-09 12:36:17,937 - INFO - Found 16 products on page 5
+2025-06-09 12:36:24,940 - INFO - Request to https://www.amazon.com/s?k=airpods&page=6 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:36:40,236 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:36:48,912 - INFO - Request to https://www.amazon.com/s?k=airpods&page=6 (Attempt 2/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:36:50,205 - WARNING - HTTP Error: 202
+2025-06-09 12:37:03,314 - INFO - Request to https://www.amazon.com/s?k=airpods&page=6 (Attempt 3/3, Proxy: http://134.209.29.120:80)
+2025-06-09 12:37:18,625 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:37:32,016 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods&page=6
+2025-06-09 12:37:32,016 - ERROR - Failed to retrieve search page 6: Failed after 3 attempts
+2025-06-09 12:37:38,879 - INFO - Request to https://www.amazon.com/s?k=airpods&page=7 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:37:54,173 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:38:08,016 - INFO - Request to https://www.amazon.com/s?k=airpods&page=7 (Attempt 2/3, Proxy: None)
+2025-06-09 12:38:10,009 - INFO - Found 14 products on page 7
+2025-06-09 12:38:13,701 - INFO - Request to https://www.amazon.com/s?k=airpods&page=8 (Attempt 1/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:38:14,995 - WARNING - HTTP Error: 202
+2025-06-09 12:38:25,848 - INFO - Request to https://www.amazon.com/s?k=airpods&page=8 (Attempt 2/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:38:41,148 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:38:49,447 - INFO - Request to https://www.amazon.com/s?k=airpods&page=8 (Attempt 3/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:39:04,742 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:39:13,944 - ERROR - All 3 attempts failed for https://www.amazon.com/s?k=airpods&page=8
+2025-06-09 12:39:13,944 - ERROR - Failed to retrieve search page 8: Failed after 3 attempts
+2025-06-09 12:39:20,802 - INFO - Request to https://www.amazon.com/s?k=airpods&page=9 (Attempt 1/3, Proxy: http://138.68.60.8:80)
+2025-06-09 12:39:36,095 - WARNING - Request failed: HTTPSConnectionPool(host='www.amazon.com', port=443): Read timed out. (read timeout=15)
+2025-06-09 12:39:42,691 - INFO - Request to https://www.amazon.com/s?k=airpods&page=9 (Attempt 2/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:39:45,853 - INFO - Found 14 products on page 9
+2025-06-09 12:39:51,817 - INFO - Request to https://www.amazon.com/s?k=airpods&page=10 (Attempt 1/3, Proxy: http://23.237.210.82:80)
+2025-06-09 12:39:54,070 - INFO - Found 14 products on page 10
+2025-06-09 12:39:54,070 - INFO - Found 0 product URLs

@@ -299,14 +299,24 @@ class AmazonScraper:
         if not self.can_fetch(url):
             return False, "Blocked by robots.txt"
         
-        # Random delay before request
-        time.sleep(random.uniform(*self.delay_range))
+        # Random delay before request - increasing delay range
+        time.sleep(random.uniform(self.delay_range[0]*1.5, self.delay_range[1]*2))
+        
+        # Track failed proxies during this request
+        failed_proxies = set()
         
         # Try each proxy until success or out of retries
         for attempt in range(retries):
-            # Select a proxy and UA
-            proxy = random.choice(self.proxies) if self.proxies else None
-            headers = self.get_request_headers()
+            # Select a proxy and UA, avoiding recently failed ones
+            available_proxies = [p for p in self.proxies if p not in failed_proxies]
+            
+            # If all proxies failed, reset and increase delay
+            if not available_proxies:
+                available_proxies = self.proxies
+                time.sleep(random.uniform(5, 10))  # Longer cooldown
+            
+            proxy = random.choice(available_proxies) if available_proxies else None
+            headers = self.get_enhanced_headers(url)
             proxies = {'http': proxy, 'https': proxy} if proxy else None
             
             try:
@@ -315,29 +325,95 @@ class AmazonScraper:
                     url,
                     headers=headers,
                     proxies=proxies,
-                    timeout=REQUEST_TIMEOUT
+                    timeout=REQUEST_TIMEOUT,
+                    allow_redirects=True
                 )
+                
+                # Handle HTTP 202 status which Amazon sometimes uses for bot detection
+                if response.status_code == 202:
+                    logger.warning("Received HTTP 202 - Accepted but not fulfilled. Retrying with delay...")
+                    if proxy:
+                        failed_proxies.add(proxy)
+                    time.sleep(random.uniform(10, 15))  # Longer delay for 202 responses
+                    continue
                 
                 # Check if we've been blocked
                 if response.status_code == 503 or "captcha" in response.text.lower():
                     logger.warning("Request blocked or CAPTCHA encountered")
-                    # Try a different proxy on next attempt
+                    if proxy:
+                        failed_proxies.add(proxy)
                     continue
                 
                 if response.status_code == 200:
-                    return True, response
+                    # Validate that we actually got product content
+                    if "amazon" in response.text.lower() and len(response.text) > 5000:
+                        return True, response
+                    else:
+                        logger.warning("Response too small or does not contain expected content")
+                        if proxy:
+                            failed_proxies.add(proxy)
+                        continue
                 
                 logger.warning(f"HTTP Error: {response.status_code}")
+                if proxy:
+                    failed_proxies.add(proxy)
             
             except (ConnectionError, Timeout, ProxyError) as e:
                 logger.warning(f"Request failed: {str(e)}")
+                if proxy:
+                    failed_proxies.add(proxy)
             
-            # Longer delay after a failure
-            time.sleep(random.uniform(*[x*2 for x in self.delay_range]))
+            # Exponential backoff after failure
+            backoff_time = (attempt + 1) * random.uniform(self.delay_range[0], self.delay_range[1])
+            logger.info(f"Backing off for {backoff_time:.2f} seconds")
+            time.sleep(backoff_time)
         
         logger.error(f"All {retries} attempts failed for {url}")
         return False, f"Failed after {retries} attempts"
     
+    def get_enhanced_headers(self, url):
+        """
+        Generate more realistic browser headers
+        
+        Returns headers that closely mimic a real browser session with
+        referer, cookies, and other properties that help avoid detection.
+        
+        Args:
+            url (str): URL being requested (for referer logic)
+            
+        Returns:
+            dict: Enhanced headers for HTTP requests
+        """
+        user_agent = self.get_random_user_agent()
+        parsed_url = urlparse(url)
+        domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        # More realistic headers that mimic browser behavior
+        headers = {
+            'User-Agent': user_agent,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://www.google.com/search?q=amazon+products',
+            'Sec-Ch-Ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate', 
+            'Sec-Fetch-Site': 'cross-site',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'max-age=0',
+            'DNT': '1'
+        }
+        
+        # Add cookies if available from session
+        if domain in self.session.cookies.list_domains():
+            headers['Cookie'] = '; '.join([f"{c.name}={c.value}" for c in self.session.cookies])
+        
+        return headers
+
     def search_products(self, query, max_pages=1):
         """
         Search for products on Amazon
@@ -371,20 +447,68 @@ class AmazonScraper:
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Find product listings - this selector might need updating as Amazon changes frequently
-            product_cards = soup.select('div[data-component-type="s-search-result"]')
+            # Multiple selector patterns to find product cards
+            product_cards = []
+            
+            # Primary selector pattern
+            primary_cards = soup.select('div[data-component-type="s-search-result"]')
+            if primary_cards:
+                product_cards.extend(primary_cards)
+            
+            # Alternative selector patterns
+            alternative_patterns = [
+                'div.s-result-item[data-asin]',
+                'div.sg-col-4-of-12.s-result-item',
+                'div[data-uuid]'
+            ]
+            
+            for pattern in alternative_patterns:
+                if not product_cards:  # Only try alternatives if primary failed
+                    alt_cards = soup.select(pattern)
+                    if alt_cards:
+                        product_cards.extend(alt_cards)
             
             if not product_cards:
-                logger.warning(f"No product cards found on page {page}")
-                break
+                logger.warning(f"No product cards found on page {page} using any selector pattern")
+                
+                # Last resort: Try to find any links that look like product links
+                all_links = soup.find_all('a', href=True)
+                product_pattern = re.compile(r'/dp/[A-Z0-9]{10}')
+                
+                for link in all_links:
+                    href = link.get('href', '')
+                    if product_pattern.search(href):
+                        product_url = urljoin(BASE_URL, href)
+                        if product_url not in product_urls:
+                            product_urls.append(product_url)
+                            logger.info(f"Found product URL via pattern matching: {product_url}")
             
             for card in product_cards:
                 try:
-                    # Find the link to the product
-                    link_element = card.select_one('h2 a')
+                    # Try multiple strategies to find the product link
+                    link_element = None
+                    
+                    # Strategy 1: Look for h2 > a pattern
+                    link_element = card.select_one('h2 a, h2 a.a-link-normal')
+                    
+                    # Strategy 2: Look for a link with title attribute
+                    if not link_element:
+                        link_element = card.select_one('a[title]')
+                    
+                    # Strategy 3: Find any link with /dp/ in the URL
+                    if not link_element:
+                        product_links = card.select('a[href*="/dp/"]')
+                        if product_links:
+                            link_element = product_links[0]
+                    
+                    # Process the link if found
                     if link_element and link_element.has_attr('href'):
-                        product_url = urljoin(BASE_URL, link_element['href'])
-                        product_urls.append(product_url)
+                        href = link_element['href']
+                        # Ensure this is a product URL
+                        if '/dp/' in href or '/gp/product/' in href:
+                            product_url = urljoin(BASE_URL, href)
+                            if product_url not in product_urls:
+                                product_urls.append(product_url)
                 except Exception as e:
                     logger.warning(f"Error extracting product URL: {e}")
             
@@ -412,6 +536,17 @@ class AmazonScraper:
         Returns:
             dict: Product details or None if failed
         """
+        # Try with the fallback Selenium-based extraction if available
+        if hasattr(self, 'extract_with_selenium') and callable(getattr(self, 'extract_with_selenium')):
+            try:
+                selenium_result = self.extract_with_selenium(url)
+                if selenium_result:
+                    return selenium_result
+                # If Selenium fails, fall back to requests-based method
+                logger.warning("Selenium extraction failed, trying with requests")
+            except Exception as e:
+                logger.warning(f"Selenium extraction error: {str(e)}. Falling back to requests")
+        
         success, response = self.make_request(url)
         
         if not success:
