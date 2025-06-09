@@ -416,11 +416,7 @@ class AmazonScraper:
 
     def search_products(self, query, max_pages=1):
         """
-        Search for products on Amazon
-        
-        Performs a search on Amazon using the provided query and extracts
-        product URLs from the search results pages, handling pagination
-        to fetch multiple pages of results if requested.
+        Search for products on Amazon with enhanced URL extraction
         
         Args:
             query (str): Search query
@@ -429,7 +425,7 @@ class AmazonScraper:
         Returns:
             list: List of product URLs
         """
-        product_urls = []
+        product_urls = set()  # Use set to avoid duplicates
         encoded_query = quote_plus(query)
         
         for page in range(1, max_pages + 1):
@@ -439,83 +435,203 @@ class AmazonScraper:
             else:
                 url = f"{SEARCH_URL.format(encoded_query)}&page={page}"
             
+            logger.info(f"Processing search page {page}/{max_pages}")
             success, response = self.make_request(url)
             
             if not success:
                 logger.error(f"Failed to retrieve search page {page}: {response}")
                 continue
             
+            # Save response for debugging
+            self._save_debug_html(response.text, f"search_page_{page}.html")
+            
             soup = BeautifulSoup(response.content, 'html.parser')
+            page_urls = self._extract_product_urls_comprehensive(soup, page)
             
-            # Multiple selector patterns to find product cards
-            product_cards = []
+            if page_urls:
+                product_urls.update(page_urls)
+                logger.info(f"Found {len(page_urls)} product URLs on page {page}")
+            else:
+                logger.warning(f"No product URLs found on page {page}")
+                # Save the HTML for manual inspection
+                self._save_debug_html(response.text, f"failed_page_{page}.html")
+        
+        final_urls = list(product_urls)
+        logger.info(f"Total unique product URLs found: {len(final_urls)}")
+        return final_urls
+    
+    def _extract_product_urls_comprehensive(self, soup, page_num):
+        """
+        Comprehensive product URL extraction with multiple fallback strategies
+        
+        Args:
+            soup: BeautifulSoup object
+            page_num: Page number for debugging
             
-            # Primary selector pattern
-            primary_cards = soup.select('div[data-component-type="s-search-result"]')
-            if primary_cards:
-                product_cards.extend(primary_cards)
+        Returns:
+            list: List of product URLs found
+        """
+        product_urls = set()
+        
+        # Strategy 1: Primary Amazon search result selectors
+        primary_selectors = [
+            'div[data-component-type="s-search-result"]',
+            'div[data-component-type="s-product-image"]',
+            'div.s-result-item[data-asin]',
+            'div[data-asin]:not([data-asin=""])',
+            'div.sg-col-4-of-12.s-result-item',
+            'div[data-uuid]'
+        ]
+        
+        for selector in primary_selectors:
+            cards = soup.select(selector)
+            if cards:
+                logger.info(f"Found {len(cards)} product cards using selector: {selector}")
+                
+                for card in cards:
+                    urls = self._extract_urls_from_card(card)
+                    product_urls.update(urls)
+                
+                if product_urls:
+                    break  # Stop if we found URLs with this selector
+        
+        # Strategy 2: Link-based extraction with product patterns
+        if not product_urls:
+            logger.info("Primary selectors failed, trying link-based extraction")
             
-            # Alternative selector patterns
-            alternative_patterns = [
-                'div.s-result-item[data-asin]',
-                'div.sg-col-4-of-12.s-result-item',
-                'div[data-uuid]'
+            # Look for all links that match Amazon product patterns
+            all_links = soup.find_all('a', href=True)
+            product_patterns = [
+                re.compile(r'/dp/[A-Z0-9]{10}'),
+                re.compile(r'/gp/product/[A-Z0-9]{10}'),
+                re.compile(r'/exec/obidos/ASIN/[A-Z0-9]{10}'),
+                re.compile(r'amazon\.com.*?/dp/[A-Z0-9]{10}')
             ]
             
-            for pattern in alternative_patterns:
-                if not product_cards:  # Only try alternatives if primary failed
-                    alt_cards = soup.select(pattern)
-                    if alt_cards:
-                        product_cards.extend(alt_cards)
-            
-            if not product_cards:
-                logger.warning(f"No product cards found on page {page} using any selector pattern")
-                
-                # Last resort: Try to find any links that look like product links
-                all_links = soup.find_all('a', href=True)
-                product_pattern = re.compile(r'/dp/[A-Z0-9]{10}')
-                
-                for link in all_links:
-                    href = link.get('href', '')
-                    if product_pattern.search(href):
-                        product_url = urljoin(BASE_URL, href)
-                        if product_url not in product_urls:
-                            product_urls.append(product_url)
-                            logger.info(f"Found product URL via pattern matching: {product_url}")
-            
-            for card in product_cards:
-                try:
-                    # Try multiple strategies to find the product link
-                    link_element = None
-                    
-                    # Strategy 1: Look for h2 > a pattern
-                    link_element = card.select_one('h2 a, h2 a.a-link-normal')
-                    
-                    # Strategy 2: Look for a link with title attribute
-                    if not link_element:
-                        link_element = card.select_one('a[title]')
-                    
-                    # Strategy 3: Find any link with /dp/ in the URL
-                    if not link_element:
-                        product_links = card.select('a[href*="/dp/"]')
-                        if product_links:
-                            link_element = product_links[0]
-                    
-                    # Process the link if found
-                    if link_element and link_element.has_attr('href'):
-                        href = link_element['href']
-                        # Ensure this is a product URL
-                        if '/dp/' in href or '/gp/product/' in href:
-                            product_url = urljoin(BASE_URL, href)
-                            if product_url not in product_urls:
-                                product_urls.append(product_url)
-                except Exception as e:
-                    logger.warning(f"Error extracting product URL: {e}")
-            
-            logger.info(f"Found {len(product_cards)} products on page {page}")
+            for link in all_links:
+                href = link.get('href', '')
+                for pattern in product_patterns:
+                    if pattern.search(href):
+                        full_url = urljoin(BASE_URL, href)
+                        # Clean URL parameters except essential ones
+                        clean_url = self._clean_product_url(full_url)
+                        if clean_url:
+                            product_urls.add(clean_url)
+                            logger.debug(f"Found product URL via pattern: {clean_url}")
         
-        return product_urls
+        # Strategy 3: ASIN-based extraction
+        if not product_urls:
+            logger.info("Link extraction failed, trying ASIN-based extraction")
+            
+            # Look for data-asin attributes
+            asin_elements = soup.find_all(attrs={'data-asin': True})
+            for element in asin_elements:
+                asin = element.get('data-asin')
+                if asin and len(asin) == 10 and asin.isalnum():
+                    product_url = f"{BASE_URL}/dp/{asin}"
+                    product_urls.add(product_url)
+                    logger.debug(f"Found product via ASIN: {asin}")
+        
+        # Strategy 4: Text-based ASIN extraction
+        if not product_urls:
+            logger.info("ASIN extraction failed, trying text-based extraction")
+            
+            # Look for ASINs in text content
+            page_text = soup.get_text()
+            asin_pattern = re.compile(r'\b[A-Z0-9]{10}\b')
+            potential_asins = asin_pattern.findall(page_text)
+            
+            for asin in set(potential_asins):  # Remove duplicates
+                # Basic validation - ASINs usually start with B or have mixed case
+                if asin.startswith('B') or not asin.isdigit():
+                    product_url = f"{BASE_URL}/dp/{asin}"
+                    product_urls.add(product_url)
+                    logger.debug(f"Found potential product via text ASIN: {asin}")
+        
+        return list(product_urls)
     
+    def _extract_urls_from_card(self, card):
+        """Extract product URLs from a product card element"""
+        urls = set()
+        
+        # Multiple link extraction strategies for the card
+        link_selectors = [
+            'h2 a',
+            'h2 a.a-link-normal',
+            'a[title]',
+            'a[href*="/dp/"]',
+            'a[href*="/gp/product/"]',
+            '.s-image a',
+            '.a-link-normal',
+            'a.a-link-normal'
+        ]
+        
+        for selector in link_selectors:
+            links = card.select(selector)
+            for link in links:
+                href = link.get('href')
+                if href and ('/dp/' in href or '/gp/product/' in href):
+                    full_url = urljoin(BASE_URL, href)
+                    clean_url = self._clean_product_url(full_url)
+                    if clean_url:
+                        urls.add(clean_url)
+        
+        return urls
+    
+    def _clean_product_url(self, url):
+        """Clean and validate a product URL"""
+        try:
+            from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+            
+            parsed = urlparse(url)
+            
+            # Must be an Amazon URL
+            if 'amazon.com' not in parsed.netloc:
+                return None
+            
+            # Must have product identifier
+            if not ('/dp/' in parsed.path or '/gp/product/' in parsed.path):
+                return None
+            
+            # Keep only essential parameters
+            query_params = parse_qs(parsed.query)
+            essential_params = {}
+            
+            # Keep ref parameter if present (helps with tracking)
+            if 'ref' in query_params:
+                essential_params['ref'] = query_params['ref'][0]
+            
+            new_query = urlencode(essential_params) if essential_params else ''
+            
+            clean_url = urlunparse((
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                parsed.params,
+                new_query,
+                ''  # Remove fragment
+            ))
+            
+            return clean_url
+            
+        except Exception:
+            return None
+    
+    def _save_debug_html(self, html_content, filename):
+        """Save HTML content for debugging purposes"""
+        try:
+            debug_dir = os.path.join(OUTPUT_DIR, 'debug')
+            if not os.path.exists(debug_dir):
+                os.makedirs(debug_dir)
+            
+            filepath = os.path.join(debug_dir, filename)
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            
+            logger.debug(f"Saved debug HTML: {filepath}")
+        except Exception as e:
+            logger.warning(f"Failed to save debug HTML: {e}")
+
     def extract_product_details(self, url):
         """
         Extract details from a product page
